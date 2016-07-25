@@ -22,7 +22,14 @@ $resources = Find-AzureRmResource -ResourceNameContains $serverName
 
 #Create Firewall rule
 $ipAddress = (Invoke-WebRequest 'http://myexternalip.com/raw' -UseBasicParsing).Content -replace "`n"
-New-AzureRmSqlServerFirewallRule -ResourceGroupName $resourcegroupname -ServerName $serverName -FirewallRuleName 'TFSAgent' -StartIpAddress $ipAddress -EndIpAddress $ipAddress -ErrorAction SilentlyContinue
+if ($ConnectedServiceNameSelected -eq "Azure Resource Manager")
+{
+    New-AzureRmSqlServerFirewallRule -ResourceGroupName $resourcegroupname -ServerName $serverName -FirewallRuleName 'TFSAgent' -StartIpAddress $ipAddress -EndIpAddress $ipAddress -ErrorAction SilentlyContinue
+}
+else
+{
+    New-AzureSqlServerFirewallRule -ServerName $serverName -RuleName 'TFSAgent' -StartIpAddress $ipAddress -EndIpAddress $ipAddress -ErrorAction SilentlyContinue
+}
 
 Write-Host "Running scripts";
 
@@ -43,7 +50,15 @@ foreach ($f in Get-ChildItem -path "$pathToScripts" -Filter *.sql | sort-object)
 $SqlConnection.Close()
 
 #Remove Firewall rule
-Remove-AzureRmSqlServerFirewallRule -ResourceGroupName $resourcegroupname -ServerName $servername -FirewallRuleName 'TFSAgent' -Force
+#Remove Firewall rule
+if ($ConnectedServiceNameSelected -eq "Azure Resource Manager")
+{
+    Remove-AzureRmSqlServerFirewallRule -ResourceGroupName $resourcegroupname -ServerName $servername -FirewallRuleName 'TFSAgent' -Force
+}
+else
+{
+    Remove-AzureSqlServerFirewallRule -ResourceGroupName -ServerName $servername -RuleName 'TFSAgent' -Force 
+}
 
 Write-Host "Finished";
 
