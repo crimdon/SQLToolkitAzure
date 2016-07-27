@@ -1,4 +1,4 @@
-﻿[CmdletBinding(DefaultParameterSetName = 'None')]
+[CmdletBinding(DefaultParameterSetName = 'None')]
 Param
 (
 	[String] [Parameter(Mandatory = $true)] $ConnectedServiceNameSelector,
@@ -17,19 +17,19 @@ Add-PSSnapin SqlServerProviderSnapin100 -ErrorAction SilentlyContinue
 
 Write-Host "Running Stored Procedure"
 
-#Get resource group name
-$resources = Find-AzureRmResource -ResourceNameContains $serverName
-[string]$resourcegroupname = $resources.ResourceGroupName[0]
-
 #Create Firewall rule
 $ipAddress = (Invoke-WebRequest 'http://myexternalip.com/raw' -UseBasicParsing).Content -replace "`n"
 if ($ConnectedServiceNameSelected -eq "Azure Resource Manager")
 {
+    #Get resource group name
+    $resources = Find-AzureRmResource -ResourceNameContains $serverName
+    [string]$resourcegroupname = $resources.ResourceGroupName[0]
+
     New-AzureRmSqlServerFirewallRule -ResourceGroupName $resourcegroupname -ServerName $serverName -FirewallRuleName 'TFSAgent' -StartIpAddress $ipAddress -EndIpAddress $ipAddress -ErrorAction SilentlyContinue
 }
 else
 {
-    New-AzureSqlServerFirewallRule -ServerName $serverName -RuleName 'TFSAgent' -StartIpAddress $ipAddress -EndIpAddress $ipAddress -ErrorAction SilentlyContinue
+    New-AzureSqlDatabaseServerFirewallRule  -ServerName $serverName -RuleName 'TFSAgent' -StartIpAddress $ipAddress -EndIpAddress $ipAddress -ErrorAction SilentlyContinue
 }
 
 #Construct to the SQL to run
@@ -40,7 +40,7 @@ $SqlConnection = New-Object System.Data.SqlClient.SqlConnection
 $SqlConnection.ConnectionString = "Server=tcp:$serverName.database.windows.net,1433;Initial Catalog=$databaseName;Persist Security Info=False;User ID=$userName;Password=$userPassword;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
 $SqlConnection.Open()
 $SqlCmd = New-Object System.Data.SqlClient.SqlCommand
-$SqlCmd.CommandText = $Query
+$SqlCmd.CommandText = $sqlQuery
 $SqlCmd.Connection = $SqlConnection
 $reader = $SqlCmd.ExecuteReader()
 #Invoke-Sqlcmd -ServerInstance "$serverName.database.windows.net" -Database $databaseName -Query $sqlQuery -Username $userName -Password $userPassword
@@ -52,7 +52,7 @@ if ($ConnectedServiceNameSelected -eq "Azure Resource Manager")
 }
 else
 {
-    Remove-AzureSqlServerFirewallRule -ResourceGroupName -ServerName $servername -RuleName 'TFSAgent' -Force 
+    Remove-AzureSqlDatabaseServerFirewallRule -ServerName $servername -RuleName 'TFSAgent' -Force 
 }
 
 Write-Host "Finished"
