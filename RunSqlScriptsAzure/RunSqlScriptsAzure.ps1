@@ -28,7 +28,7 @@ if ($ConnectedServiceNameSelected -eq "Azure Resource Manager")
 }
 else
 {
-    New-AzureSqlServerFirewallRule -ServerName $serverName -RuleName 'TFSAgent' -StartIpAddress $ipAddress -EndIpAddress $ipAddress -ErrorAction SilentlyContinue
+    New-AzureSqlDatabaseServerFirewallRule -ServerName $serverName -RuleName 'TFSAgent' -StartIpAddress $ipAddress -EndIpAddress $ipAddress -ErrorAction SilentlyContinue
 }
 
 Write-Host "Running scripts";
@@ -57,7 +57,7 @@ if ($ConnectedServiceNameSelected -eq "Azure Resource Manager")
 }
 else
 {
-    Remove-AzureSqlServerFirewallRule -ResourceGroupName -ServerName $servername -RuleName 'TFSAgent' -Force 
+    Remove-AzureSqlDatabaseServerFirewallRule -ResourceGroupName -ServerName $servername -RuleName 'TFSAgent' -Force 
 }
 
 Write-Host "Finished";
