@@ -8,7 +8,8 @@ Param
 	[String] [Parameter(Mandatory = $true)] $serverName,
 	[String] [Parameter(Mandatory = $true)] $databaseName,
 	[String] [Parameter(Mandatory = $true)] $userName,
-	[String] [Parameter(Mandatory = $true)] $userPassword
+	[String] [Parameter(Mandatory = $true)] $userPassword,
+	[int] [Parameter(Mandatory = $true)] $queryTimeout
 )
 
 Add-PSSnapin SqlServerCmdletSnapin100 -ErrorAction SilentlyContinue
@@ -39,7 +40,9 @@ $SqlConnection.Open()
 $SqlCmd = New-Object System.Data.SqlClient.SqlCommand
 $SqlCmd.CommandText = $Query
 $SqlCmd.Connection = $SqlConnection
+$SqlCmd.CommandTimeout = $queryTimeout
 $reader = $SqlCmd.ExecuteReader()
+$SqlConnection.Close()
 #Invoke-Sqlcmd -ServerInstance "$serverName.database.windows.net" -Database $databaseName -InputFile $sqlScript -Username $userName -Password $userPassword
 
 #Remove Firewall rule

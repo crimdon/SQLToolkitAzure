@@ -9,7 +9,8 @@ Param
 	[String] [Parameter(Mandatory = $true)] $sprocName,
 	[String] [Parameter(Mandatory = $true)] $sprocParameters,
 	[String] [Parameter(Mandatory = $true)] $userName,
-	[String] [Parameter(Mandatory = $true)] $userPassword
+	[String] [Parameter(Mandatory = $true)] $userPassword,
+	[int] [Parameter(Mandatory = $true)] $queryTimeout
 )
 
 Add-PSSnapin SqlServerCmdletSnapin100 -ErrorAction SilentlyContinue
@@ -42,6 +43,7 @@ $SqlConnection.Open()
 $SqlCmd = New-Object System.Data.SqlClient.SqlCommand
 $SqlCmd.CommandText = $sqlQuery
 $SqlCmd.Connection = $SqlConnection
+$SqlCmd.CommandTimeout = $queryTimeout
 $reader = $SqlCmd.ExecuteReader()
 #Invoke-Sqlcmd -ServerInstance "$serverName.database.windows.net" -Database $databaseName -Query $sqlQuery -Username $userName -Password $userPassword
 

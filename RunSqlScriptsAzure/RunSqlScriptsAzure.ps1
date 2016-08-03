@@ -8,7 +8,8 @@ Param
 	[String] [Parameter(Mandatory = $true)] $serverName,
 	[String] [Parameter(Mandatory = $true)] $databaseName,
 	[String] [Parameter(Mandatory = $true)] $userName,
-	[String] [Parameter(Mandatory = $true)] $userPassword
+	[String] [Parameter(Mandatory = $true)] $userPassword,
+	[int] [Parameter(Mandatory = $true)] $queryTimeout
 )
 
 Add-PSSnapin SqlServerCmdletSnapin100 -ErrorAction SilentlyContinue
@@ -38,6 +39,7 @@ $SqlConnection.ConnectionString = "Server=tcp:$serverName.database.windows.net,1
 $SqlConnection.Open()
 $SqlCmd = New-Object System.Data.SqlClient.SqlCommand
 $SqlCmd.Connection = $SqlConnection
+$SqlCmd.CommandTimeout = $queryTimeout
 
 foreach ($f in Get-ChildItem -path "$pathToScripts" -Filter *.sql | sort-object)
 {	
