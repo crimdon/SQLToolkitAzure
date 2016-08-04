@@ -20,4 +20,5 @@ This is a set of build and deployment tasks to support Azure Databases.
 
 
 ## Website: 
-    https://github.com/crimdon/SQLToolkitAzure
+
+[SQL Toolkit for Azure](https://github.com/crimdon/SQLToolkitAzure)
