@@ -2,7 +2,7 @@
     "manifestVersion": 1,
     "id": "sql-toolkit-azure",
     "name": "SQL Toolkit for Azure",
-    "version": "1.1.3",
+    "version": "1.1.4",
     "public": true,
     "publisher": "andrewlackenby",
 	"categories": [
@@ -15,7 +15,7 @@
     },
     "targets": [
         {
-            "id": "Microsoft.VisualStudio.Services"
+            "id": "Microsoft.VisualStudio.Services.Cloud"
         }
     ],    
     "description": "SQL Toolkit for Azure",
