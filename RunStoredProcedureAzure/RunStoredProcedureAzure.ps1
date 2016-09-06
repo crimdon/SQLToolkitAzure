@@ -16,46 +16,55 @@ Param
 Add-PSSnapin SqlServerCmdletSnapin100 -ErrorAction SilentlyContinue
 Add-PSSnapin SqlServerProviderSnapin100 -ErrorAction SilentlyContinue
 
-Write-Host "Running Stored Procedure"
-
-#Create Firewall rule
-$ipAddress = (Invoke-WebRequest 'http://myexternalip.com/raw' -UseBasicParsing).Content -replace "`n"
-if ($ConnectedServiceNameSelected -eq "Azure Resource Manager")
+Try
 {
-    #Get resource group name
-    $resources = Find-AzureRmResource -ResourceNameContains $serverName
-    [string]$resourcegroupname = $resources.ResourceGroupName[0]
+	Write-Host "Running Stored Procedure"
 
-    New-AzureRmSqlServerFirewallRule -ResourceGroupName $resourcegroupname -ServerName $serverName -FirewallRuleName 'TFSAgent' -StartIpAddress $ipAddress -EndIpAddress $ipAddress -ErrorAction SilentlyContinue
+	#Create Firewall rule
+	$ipAddress = (Invoke-WebRequest 'http://myexternalip.com/raw' -UseBasicParsing).Content -replace "`n"
+	if ($ConnectedServiceNameSelected -eq "Azure Resource Manager")
+	{
+	    #Get resource group name
+	    $resources = Find-AzureRmResource -ResourceNameContains $serverName
+	    [string]$resourcegroupname = $resources.ResourceGroupName[0]
+
+	    New-AzureRmSqlServerFirewallRule -ResourceGroupName $resourcegroupname -ServerName $serverName -FirewallRuleName 'TFSAgent' -StartIpAddress $ipAddress -EndIpAddress $ipAddress -ErrorAction SilentlyContinue
+	}
+	else
+	{
+	    New-AzureSqlDatabaseServerFirewallRule  -ServerName $serverName -RuleName 'TFSAgent' -StartIpAddress $ipAddress -EndIpAddress $ipAddress -ErrorAction SilentlyContinue
+	}
+
+	#Construct to the SQL to run
+	[string]$sqlQuery = "EXEC " + $sprocName + " " + $sprocParameters
+		
+	#Execute the query
+	$SqlConnection = New-Object System.Data.SqlClient.SqlConnection
+	$SqlConnection.ConnectionString = "Server=tcp:$serverName.database.windows.net,1433;Initial Catalog=$databaseName;Persist Security Info=False;User ID=$userName;Password=$userPassword;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+	$SqlConnection.Open()
+	$SqlCmd = New-Object System.Data.SqlClient.SqlCommand
+	$SqlCmd.CommandText = $sqlQuery
+	$SqlCmd.Connection = $SqlConnection
+	$SqlCmd.CommandTimeout = $queryTimeout
+	$reader = $SqlCmd.ExecuteReader()
+	#Invoke-Sqlcmd -ServerInstance "$serverName.database.windows.net" -Database $databaseName -Query $sqlQuery -Username $userName -Password $userPassword
+
+	#Remove Firewall rule
+	if ($ConnectedServiceNameSelected -eq "Azure Resource Manager")
+	{
+	    Remove-AzureRmSqlServerFirewallRule -ResourceGroupName $resourcegroupname -ServerName $servername -FirewallRuleName 'TFSAgent' -Force -ErrorAction SilentlyContinue
+	}
+	else
+	{
+	    Remove-AzureSqlDatabaseServerFirewallRule -ServerName $servername -RuleName 'TFSAgent' -Force -ErrorAction SilentlyContinue
+	}
+
+	Write-Host "Finished"
 }
-else
+
+Catch
 {
-    New-AzureSqlDatabaseServerFirewallRule  -ServerName $serverName -RuleName 'TFSAgent' -StartIpAddress $ipAddress -EndIpAddress $ipAddress -ErrorAction SilentlyContinue
+	Write-Host "Error running SQL script: $_" -ForegroundColor Red
+	throw $_
 }
-
-#Construct to the SQL to run
-[string]$sqlQuery = "EXEC " + $sprocName + " " + $sprocParameters
-	
-#Execute the query
-$SqlConnection = New-Object System.Data.SqlClient.SqlConnection
-$SqlConnection.ConnectionString = "Server=tcp:$serverName.database.windows.net,1433;Initial Catalog=$databaseName;Persist Security Info=False;User ID=$userName;Password=$userPassword;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
-$SqlConnection.Open()
-$SqlCmd = New-Object System.Data.SqlClient.SqlCommand
-$SqlCmd.CommandText = $sqlQuery
-$SqlCmd.Connection = $SqlConnection
-$SqlCmd.CommandTimeout = $queryTimeout
-$reader = $SqlCmd.ExecuteReader()
-#Invoke-Sqlcmd -ServerInstance "$serverName.database.windows.net" -Database $databaseName -Query $sqlQuery -Username $userName -Password $userPassword
-
-#Remove Firewall rule
-if ($ConnectedServiceNameSelected -eq "Azure Resource Manager")
-{
-    Remove-AzureRmSqlServerFirewallRule -ResourceGroupName $resourcegroupname -ServerName $servername -FirewallRuleName 'TFSAgent' -Force
-}
-else
-{
-    Remove-AzureSqlDatabaseServerFirewallRule -ServerName $servername -RuleName 'TFSAgent' -Force 
-}
-
-Write-Host "Finished"
 
