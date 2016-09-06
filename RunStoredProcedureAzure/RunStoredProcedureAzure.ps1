@@ -52,11 +52,11 @@ Try
 	#Remove Firewall rule
 	if ($ConnectedServiceNameSelected -eq "Azure Resource Manager")
 	{
-	    Remove-AzureRmSqlServerFirewallRule -ResourceGroupName $resourcegroupname -ServerName $servername -FirewallRuleName 'TFSAgent' -Force
+	    Remove-AzureRmSqlServerFirewallRule -ResourceGroupName $resourcegroupname -ServerName $servername -FirewallRuleName 'TFSAgent' -Force -ErrorAction SilentlyContinue
 	}
 	else
 	{
-	    Remove-AzureSqlDatabaseServerFirewallRule -ServerName $servername -RuleName 'TFSAgent' -Force 
+	    Remove-AzureSqlDatabaseServerFirewallRule -ServerName $servername -RuleName 'TFSAgent' -Force -ErrorAction SilentlyContinue
 	}
 
 	Write-Host "Finished"
@@ -65,5 +65,6 @@ Try
 Catch
 {
 	Write-Host "Error running SQL script: $_" -ForegroundColor Red
+	throw $_
 }
 

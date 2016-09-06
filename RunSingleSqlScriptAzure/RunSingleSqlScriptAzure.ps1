@@ -17,13 +17,12 @@ Add-PSSnapin SqlServerProviderSnapin100 -ErrorAction SilentlyContinue
 
 Try
 {
-	Write-Host "Running Script"
-
 	#Get resource group name
 	$resources = Find-AzureRmResource -ResourceNameContains $serverName
 	[string]$resourcegroupname = $resources.ResourceGroupName[0]
 
 	#Create Firewall rule
+	Write-Host "Creating Firewall Rule"
 	$ipAddress = (Invoke-WebRequest 'http://myexternalip.com/raw' -UseBasicParsing).Content -replace "`n"
 	if ($ConnectedServiceNameSelected -eq "Azure Resource Manager")
 	{
@@ -35,6 +34,7 @@ Try
 	}
 		
 	#Execute the query
+	Write-Host "Running Script"
 	$Query = [IO.File]::ReadAllText("$sqlScript")
 	$SqlConnection = New-Object System.Data.SqlClient.SqlConnection
 	$SqlConnection.ConnectionString = "Server=tcp:$serverName.database.windows.net,1433;Initial Catalog=$databaseName;Persist Security Info=False;User ID=$userName;Password=$userPassword;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
@@ -47,13 +47,14 @@ Try
 	$SqlConnection.Close()
 
 	#Remove Firewall rule
+	Write-Host "Removing Firewall Rule"
 	if ($ConnectedServiceNameSelected -eq "Azure Resource Manager")
 	{
-	    Remove-AzureRmSqlServerFirewallRule -ResourceGroupName $resourcegroupname -ServerName $servername -FirewallRuleName 'TFSAgent' -Force
+	    Remove-AzureRmSqlServerFirewallRule -ResourceGroupName $resourcegroupname -ServerName $servername -FirewallRuleName 'TFSAgent' -Force -ErrorAction SilentlyContinue
 	}
 	else
 	{
-	    Remove-AzureSqlDatabaseServerFirewallRule -ResourceGroupName -ServerName $servername -RuleName 'TFSAgent' -Force 
+	    Remove-AzureSqlDatabaseServerFirewallRule -ServerName $servername -RuleName 'TFSAgent' -Force -ErrorAction SilentlyContinue
 	}
 
 
@@ -63,6 +64,7 @@ Try
 Catch
 {
 	Write-Host "Error running SQL script: $_" -ForegroundColor Red
+	throw $_
 }
 
 

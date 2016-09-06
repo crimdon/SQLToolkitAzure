@@ -1,9 +1,9 @@
 {
     "manifestVersion": 1,
-    "id": "sql-toolkit-azure-test",
+    "id": "sql-toolkit-azure",
     "name": "SQL Toolkit for Azure",
-    "version": "1.1.4",
-    "public": false,
+    "version": "1.2.0",
+    "public": true,
     "publisher": "andrewlackenby",
 	"categories": [
         "Build and release"
