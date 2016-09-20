@@ -38,6 +38,9 @@ Try
 
 	$SqlConnection = New-Object System.Data.SqlClient.SqlConnection
 	$SqlConnection.ConnectionString = "Server=tcp:$serverName.database.windows.net,1433;Initial Catalog=$databaseName;Persist Security Info=False;User ID=$userName;Password=$userPassword;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+	$handler = [System.Data.SqlClient.SqlInfoMessageEventHandler] {param($sender, $event) Write-Host $event.Message -ForegroundColor DarkBlue} 
+    $SqlConnection.add_InfoMessage($handler) 
+	$SqlConnection.FireInfoMessageEventOnUserErrors=$true
 	$SqlConnection.Open()
 	$SqlCmd = New-Object System.Data.SqlClient.SqlCommand
 	$SqlCmd.Connection = $SqlConnection
@@ -48,7 +51,7 @@ Try
 		#Execute the query
 		$Query = [IO.File]::ReadAllText("$sqlScript")
 		$SqlCmd.CommandText = $Query
-		$reader = $SqlCmd.ExecuteReader()
+		$reader = $SqlCmd.ExecuteNonQuery()
 	}
 
 	$SqlConnection.Close()
