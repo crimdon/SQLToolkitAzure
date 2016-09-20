@@ -3,6 +3,7 @@
 This is a set of build and deployment tasks to support Azure Databases.
 -- It uses TFS Service Endpoints to connect to Azure.
 -- Firewall rules are created on the fly.
+-- Displays output from PRINT and RAISEERROR commands
    
 ## Tasks
 
