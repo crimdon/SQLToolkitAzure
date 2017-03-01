@@ -46,10 +46,10 @@ Try
 	$SqlCmd.Connection = $SqlConnection
 	$SqlCmd.CommandTimeout = $queryTimeout
 
-	foreach ($f in Get-ChildItem -path "$pathToScripts" -Filter *.sql | sort-object)
+	foreach ($sqlScript in Get-ChildItem -path "$pathToScripts" -Filter *.sql | sort-object)
 	{	
 		#Execute the query
-		$Query = [IO.File]::ReadAllText("$sqlScript")
+		$Query = [IO.File]::ReadAllText("$($sqlScript.FullName)")
 		$SqlCmd.CommandText = $Query
 		$reader = $SqlCmd.ExecuteNonQuery()
 	}
