@@ -9,7 +9,7 @@ Param
 	[String] [Parameter(Mandatory = $true)] $databaseName,
 	[String] [Parameter(Mandatory = $true)] $userName,
 	[String] [Parameter(Mandatory = $true)] $userPassword,
-	[int] [Parameter(Mandatory = $true)] $queryTimeout
+	[String] [Parameter(Mandatory = $true)] $queryTimeout
 )
 
 Add-PSSnapin SqlServerCmdletSnapin100 -ErrorAction SilentlyContinue
@@ -50,13 +50,19 @@ Try
 	{	
 		#Execute the query
 		$Query = [IO.File]::ReadAllText("$($sqlScript.FullName)")
-		$SqlCmd.CommandText = $Query
-		$reader = $SqlCmd.ExecuteNonQuery()
+		$batches = $Query -split "\s*$batchDelimiter\s*\r?\n"
+		foreach($batch in $batches)
+		{
+			if($batch.Trim() -ne "")
+			{
+				$SqlCmd.CommandText = $batch
+				$reader = $SqlCmd.ExecuteNonQuery()
+			}
+		}
 	}
 
 	$SqlConnection.Close()
 
-	#Remove Firewall rule
 	#Remove Firewall rule
 	if ($ConnectedServiceNameSelected -eq "Azure Resource Manager")
 	{

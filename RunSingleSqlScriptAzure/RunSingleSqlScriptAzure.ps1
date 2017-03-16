@@ -9,8 +9,10 @@ Param
 	[String] [Parameter(Mandatory = $true)] $databaseName,
 	[String] [Parameter(Mandatory = $true)] $userName,
 	[String] [Parameter(Mandatory = $true)] $userPassword,
-	[int] [Parameter(Mandatory = $true)] $queryTimeout
+	[String] [Parameter(Mandatory = $true)] $queryTimeout
 )
+
+[string]$batchDelimiter = "[gG][oO]"
 
 Add-PSSnapin SqlServerCmdletSnapin100 -ErrorAction SilentlyContinue
 Add-PSSnapin SqlServerProviderSnapin100 -ErrorAction SilentlyContinue
@@ -43,10 +45,19 @@ Try
 	$SqlConnection.FireInfoMessageEventOnUserErrors=$true
 	$SqlConnection.Open()
 	$SqlCmd = New-Object System.Data.SqlClient.SqlCommand
-	$SqlCmd.CommandText = $Query
 	$SqlCmd.Connection = $SqlConnection
 	$SqlCmd.CommandTimeout = $queryTimeout
-	$reader = $SqlCmd.ExecuteNonQuery()
+
+	$batches = $Query -split "\s*$batchDelimiter\s*\r?\n"
+		foreach($batch in $batches)
+    {
+        if($batch.Trim() -ne "")
+        {
+            $SqlCmd.CommandText = $batch
+	        $reader = $SqlCmd.ExecuteNonQuery()
+        }
+    }
+
 	$SqlConnection.Close()
 
 	#Remove Firewall rule
