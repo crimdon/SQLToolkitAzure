@@ -20,21 +20,6 @@ Try
 {
 	Write-Host "Running Stored Procedure"
 
-	#Create Firewall rule
-	$ipAddress = (Invoke-WebRequest 'http://myexternalip.com/raw' -UseBasicParsing).Content -replace "`n"
-	if ($ConnectedServiceNameSelected -eq "Azure Resource Manager")
-	{
-	    #Get resource group name
-	    $resources = Find-AzureRmResource -ResourceNameContains $serverName
-	    [string]$resourcegroupname = $resources.ResourceGroupName[0]
-
-	    New-AzureRmSqlServerFirewallRule -ResourceGroupName $resourcegroupname -ServerName $serverName -FirewallRuleName 'TFSAgent' -StartIpAddress $ipAddress -EndIpAddress $ipAddress -ErrorAction SilentlyContinue
-	}
-	else
-	{
-	    New-AzureSqlDatabaseServerFirewallRule  -ServerName $serverName -RuleName 'TFSAgent' -StartIpAddress $ipAddress -EndIpAddress $ipAddress -ErrorAction SilentlyContinue
-	}
-
 	#Construct to the SQL to run
 	[string]$sqlQuery = "EXEC " + $sprocName + " " + $sprocParameters
 		
@@ -51,16 +36,6 @@ Try
 	$SqlCmd.CommandTimeout = $queryTimeout
 	$reader = $SqlCmd.ExecuteNonQuery()
 	#Invoke-Sqlcmd -ServerInstance "$serverName.database.windows.net" -Database $databaseName -Query $sqlQuery -Username $userName -Password $userPassword
-
-	#Remove Firewall rule
-	if ($ConnectedServiceNameSelected -eq "Azure Resource Manager")
-	{
-	    Remove-AzureRmSqlServerFirewallRule -ResourceGroupName $resourcegroupname -ServerName $servername -FirewallRuleName 'TFSAgent' -Force -ErrorAction SilentlyContinue
-	}
-	else
-	{
-	    Remove-AzureSqlDatabaseServerFirewallRule -ServerName $servername -RuleName 'TFSAgent' -Force -ErrorAction SilentlyContinue
-	}
 
 	Write-Host "Finished"
 }

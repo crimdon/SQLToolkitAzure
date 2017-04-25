@@ -2,8 +2,10 @@
 
 This is a set of build and deployment tasks to support Azure Databases.
 -- It uses TFS Service Endpoints to connect to Azure.
--- Firewall rules are created on the fly.
 -- Displays output from PRINT and RAISEERROR commands
+
+-- Please note that firewall rules are no longer created on the fly by these tasks. 
+-- Ensure Allow access to Azure services is switched on for your SQL Server in the firewall.
    
 ## Tasks
 

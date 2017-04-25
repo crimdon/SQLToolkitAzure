@@ -17,23 +17,6 @@ Add-PSSnapin SqlServerProviderSnapin100 -ErrorAction SilentlyContinue
 
 Try
 {
-	Write-Host "Running Script"
-
-	#Get resource group name
-	$resources = Find-AzureRmResource -ResourceNameContains $serverName
-	[string]$resourcegroupname = $resources.ResourceGroupName[0]
-
-	#Create Firewall rule
-	$ipAddress = (Invoke-WebRequest 'http://myexternalip.com/raw' -UseBasicParsing).Content -replace "`n"
-	if ($ConnectedServiceNameSelected -eq "Azure Resource Manager")
-	{
-	    New-AzureRmSqlServerFirewallRule -ResourceGroupName $resourcegroupname -ServerName $serverName -FirewallRuleName 'TFSAgent' -StartIpAddress $ipAddress -EndIpAddress $ipAddress -ErrorAction SilentlyContinue
-	}
-	else
-	{
-	    New-AzureSqlDatabaseServerFirewallRule -ServerName $serverName -RuleName 'TFSAgent' -StartIpAddress $ipAddress -EndIpAddress $ipAddress -ErrorAction SilentlyContinue
-	}
-
 	Write-Host "Running scripts";
 
 	$SqlConnection = New-Object System.Data.SqlClient.SqlConnection
@@ -53,7 +36,7 @@ Try
 		$batches = $Query -split "\s*$batchDelimiter\s*\r?\n"
 		foreach($batch in $batches)
 		{
-			if($batch.Trim() -ne "")
+			if(![string]::IsNullOrEmpty($batch.Trim()))
 			{
 				$SqlCmd.CommandText = $batch
 				$reader = $SqlCmd.ExecuteNonQuery()
@@ -62,16 +45,6 @@ Try
 	}
 
 	$SqlConnection.Close()
-
-	#Remove Firewall rule
-	if ($ConnectedServiceNameSelected -eq "Azure Resource Manager")
-	{
-	    Remove-AzureRmSqlServerFirewallRule -ResourceGroupName $resourcegroupname -ServerName $servername -FirewallRuleName 'TFSAgent' -Force -ErrorAction SilentlyContinue
-	}
-	else
-	{
-	    Remove-AzureSqlDatabaseServerFirewallRule -ServerName $servername -RuleName 'TFSAgent' -Force  -ErrorAction SilentlyContinue
-	}
 
 	Write-Host "Finished";
 }
