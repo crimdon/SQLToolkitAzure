@@ -32,7 +32,8 @@ Try
 	foreach ($sqlScript in Get-ChildItem -path "$pathToScripts" -Filter *.sql | sort-object)
 	{	
 		#Execute the query
-		$Query = [IO.File]::ReadAllText("$($sqlScript.FullName)")
+		#$Query = [IO.File]::ReadAllText("$($sqlScript.FullName)")
+		$Query = Get-Content $sqlScript.FullName | Out-String
 		$batches = $Query -split "\s*$batchDelimiter\s*\r?\n"
 		foreach($batch in $batches)
 		{
