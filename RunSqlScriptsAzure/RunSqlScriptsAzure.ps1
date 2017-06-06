@@ -33,7 +33,7 @@ Try
 	{	
 		#Execute the query
 		#$Query = [IO.File]::ReadAllText("$($sqlScript.FullName)")
-		$Query = Get-Content $sqlScript.FullName | Out-String
+		$Query = Get-Content $sqlScript | Out-String
 		$batches = $Query -split "\s*$batchDelimiter\s*\r?\n"
 		foreach($batch in $batches)
 		{
