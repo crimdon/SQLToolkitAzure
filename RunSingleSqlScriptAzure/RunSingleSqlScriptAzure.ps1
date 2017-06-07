@@ -12,8 +12,6 @@ Param
 	[String] [Parameter(Mandatory = $true)] $queryTimeout
 )
 
-[string]$batchDelimiter = "[gG][oO]"
-
 Add-PSSnapin SqlServerCmdletSnapin100 -ErrorAction SilentlyContinue
 Add-PSSnapin SqlServerProviderSnapin100 -ErrorAction SilentlyContinue
 
@@ -26,6 +24,7 @@ Try
 	$Query = Get-Content $sqlScript | Out-String
 	$SqlConnection = New-Object System.Data.SqlClient.SqlConnection
 	$SqlConnection.ConnectionString = "Server=tcp:$serverName.database.windows.net,1433;Initial Catalog=$databaseName;Persist Security Info=False;User ID=$userName;Password=$userPassword;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+	
 	$handler = [System.Data.SqlClient.SqlInfoMessageEventHandler] {param($sender, $event) Write-Host $event.Message -ForegroundColor DarkBlue} 
     $SqlConnection.add_InfoMessage($handler) 
 	$SqlConnection.FireInfoMessageEventOnUserErrors=$true
@@ -34,18 +33,13 @@ Try
 	$SqlCmd.Connection = $SqlConnection
 	$SqlCmd.CommandTimeout = $queryTimeout
 
-	$batches = $Query -split "\s*$batchDelimiter\s*\r?\n"
-		foreach($batch in $batches)
-    {
-        if(![string]::IsNullOrEmpty($batch.Trim()))
-        {
-            $SqlCmd.CommandText = $batch
-	        $reader = $SqlCmd.ExecuteNonQuery()
-        }
-    }
+	Write-Host "Running Script " $sqlScript " on Database " $databaseName
+		
+    #Execute the query
+    (Get-Content $sqlScript | Out-String) -split '(?s)/\*.*?\*/' -split '\r?\ngo\r?\n' -notmatch '^\s*$' |
+        ForEach-Object { $SqlCmd.CommandText = $_.Trim(); $reader = $SqlCmd.ExecuteNonQuery() }
 
 	$SqlConnection.Close()
-
 	Write-Host "Finished"
 }
 
