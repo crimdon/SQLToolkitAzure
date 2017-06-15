@@ -9,6 +9,7 @@ Param
     [String] [Parameter(Mandatory = $true)] $databaseName,
     [String] [Parameter(Mandatory = $true)] $userName,
     [String] [Parameter(Mandatory = $true)] $userPassword,
+    [String] [Parameter(Mandatory = $true)] $removeComments,
     [String] [Parameter(Mandatory = $true)] $queryTimeout
 )
 
@@ -35,8 +36,17 @@ Try {
         Write-Host "Running Script " $sqlScript.Name
 		
         #Execute the query
-        (Get-Content $sqlScript.FullName | Out-String) -split '(?s)/\*.*?\*/' -split '\r?\ngo\r?\n' -notmatch '^\s*$' |
-            ForEach-Object { $SqlCmd.CommandText = $_.Trim(); $reader = $SqlCmd.ExecuteNonQuery() }
+        switch ($removeComments) {
+        $true {
+            (Get-Content $sqlScript.FullName | Out-String) -replace '(?s)/\*.*?\*/', " " -split '\r?\ngo\r?\n' -notmatch '^\s*$' |
+                ForEach-Object { $SqlCmd.CommandText = $_.Trim(); $reader = $SqlCmd.ExecuteNonQuery() }
+        }
+        $false {
+            (Get-Content $sqlScript.FullName | Out-String) -split '\r?\ngo\r?\n' |
+                ForEach-Object { $SqlCmd.CommandText = $_.Trim(); $reader = $SqlCmd.ExecuteNonQuery() }
+        }
+    }
+
     }
 
 
