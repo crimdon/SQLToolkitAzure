@@ -31,8 +31,10 @@ Try {
     $SqlCmd.CommandTimeout = $queryTimeout
 
     Write-Host "Running all scripts in $pathToScripts";
+    $scripts = Get-ChildItem -path "$pathToScripts" -Filter *.sql | sort-object
 
-    foreach ($sqlScript in Get-ChildItem -path "$pathToScripts" -Filter *.sql | sort-object) {	
+    foreach ($sqlScript in [System.Linq.Enumerable]::OrderBy($scripts, [Func[object, int]]{ param($x) [int]($x.Name -replace '(\d+)_(.*)','$1') })
+) {	
         Write-Host "Running Script " $sqlScript.Name
 		
         #Execute the query
