@@ -5,6 +5,7 @@ Param
     [String] $ConnectedServiceName,
     [String] $ConnectedServiceNameARM,
     [String] [Parameter(Mandatory = $true)] $pathToScripts,
+    [String] [Parameter(Mandatory = $true)] $executionOrder
     [String] [Parameter(Mandatory = $true)] $serverName,
     [String] [Parameter(Mandatory = $true)] $databaseName,
     [String] [Parameter(Mandatory = $true)] $userName,
@@ -33,32 +34,54 @@ Try {
     Write-Host "Running all scripts in $pathToScripts";
     $scripts = Get-ChildItem -path "$pathToScripts" -Filter *.sql | sort-object
 
-    foreach ($sqlScript in [System.Linq.Enumerable]::OrderBy($scripts, [Func[object, int]]{ param($x) [int]($x.Name -replace '(\d+)_(.*)','$1') })
-) {	
-        Write-Host "Running Script " $sqlScript.Name
+    if ([string]::IsNullOrEmpty($executionOrder)) {
+        Write-Host "Running all scripts in $pathToScripts";
+        foreach ($sqlScript in [System.Linq.Enumerable]::OrderBy($scripts, [Func[object, int]] { param($x) [int]($x.Name -replace '(\d+)_(.*)', '$1') })
+        ) {	
+            Write-Host "Running Script " $sqlScript.Name
 		
-        #Execute the query
-        switch ($removeComments) {
-        $true {
-            (Get-Content $sqlScript.FullName | Out-String) -replace '(?s)/\*.*?\*/', " " -split '\r?\ngo\r?\n' -notmatch '^\s*$' |
-                ForEach-Object { $SqlCmd.CommandText = $_.Trim(); $reader = $SqlCmd.ExecuteNonQuery() }
+            #Execute the query
+            switch ($removeComments) {
+                $true {
+                    (Get-Content $sqlScript.FullName | Out-String) -replace '(?s)/\*.*?\*/', " " -split '\r?\n\s*go\r?\n' -notmatch '^\s*$' |
+                        ForEach-Object { $SqlCmd.CommandText = $_.Trim(); $reader = $SqlCmd.ExecuteNonQuery() }
+                }
+                $false {
+                    (Get-Content $sqlScript.FullName | Out-String) -split '\r?\n\s*go\r?\n' |
+                        ForEach-Object { $SqlCmd.CommandText = $_.Trim(); $reader = $SqlCmd.ExecuteNonQuery() }
+                }
+            }
         }
-        $false {
-            (Get-Content $sqlScript.FullName | Out-String) -split '\r?\ngo\r?\n' |
-                ForEach-Object { $SqlCmd.CommandText = $_.Trim(); $reader = $SqlCmd.ExecuteNonQuery() }
+        else {
+            Write-Host "Using file $executionOrder"
+            $TOCFile = $pathToScripts + "\" + $executionOrder
+            Write-Host "Using file $TOCFile"
+            Get-Content $TOCFile -Encoding UTF8 | ForEach-Object {
+                $sqlScript = $pathToScripts + "\" + $_
+                Write-Host "Running Script " $sqlScript
+                #Execute the query
+                switch ($removeComments) {
+                    $true {
+                        (Get-Content $sqlScript.FullName | Out-String) -replace '(?s)/\*.*?\*/', " " -split '\r?\n\s*go\r?\n' -notmatch '^\s*$' |
+                            ForEach-Object { $SqlCmd.CommandText = $_.Trim(); $reader = $SqlCmd.ExecuteNonQuery() }
+                    }
+                    $false {
+                        (Get-Content $sqlScript.FullName | Out-String) -split '\r?\n\s*go\r?\n' |
+                            ForEach-Object { $SqlCmd.CommandText = $_.Trim(); $reader = $SqlCmd.ExecuteNonQuery() }
+                    }
+                }
+            }
         }
+
+
+        $SqlConnection.Close()
+        Write-Host "Finished";
     }
-
-    }
-
-
-    $SqlConnection.Close()
-    Write-Host "Finished";
 }
 
-Catch {
-    Write-Host "Error running SQL script: $_" -ForegroundColor Red
-    throw $_
-}
+    Catch {
+        Write-Host "Error running SQL script: $_" -ForegroundColor Red
+        throw $_
+    }
 
 

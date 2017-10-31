@@ -57,6 +57,13 @@
             "required": true
         },
         {
+            "name": "executionOrder",
+            "type": "string",
+            "label": "File containing list of files to execute (optional)",
+            "required": false,
+            "helpMarkDown": "Put file names in here (including extension) in the order you wish them to be executed. One file name per line."
+        },
+        {
             "name": "serverName",
             "type": "string",
             "label": "Server Name",
