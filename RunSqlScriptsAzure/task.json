@@ -8,7 +8,7 @@
     "version": {
         "Major": "1",
         "Minor": "3",
-        "Patch": "0"
+        "Patch": "4"
     },
     "demands": ["azureps"],
     "minimumAgentVersion": "1.95.0",
@@ -55,6 +55,13 @@
             "type": "filePath",
             "label": "Path to SQL Scripts",
             "required": true
+        },
+        {
+            "name": "executionOrder",
+            "type": "string",
+            "label": "File containing list of files to execute (optional)",
+            "required": false,
+            "helpMarkDown": "Put file names in here (including extension) in the order you wish them to be executed. One file name per line."
         },
         {
             "name": "serverName",
