@@ -39,11 +39,11 @@ Try
     #Execute the query
     switch ($removeComments) {
         $true {
-            (Get-Content $sqlScript | Out-String) -replace '(?s)/\*.*?\*/', " " -split '\r?\n\s*go\r?\n' -notmatch '^\s*$' |
+            (Get-Content $sqlScript | Out-String) -replace '(?s)/\*.*?\*/', " " -split '\r?\n\s*go\s*\r\n?' -notmatch '^\s*$' |
                 ForEach-Object { $SqlCmd.CommandText = $_.Trim(); $reader = $SqlCmd.ExecuteNonQuery() }
         }
         $false {
-            (Get-Content $sqlScript | Out-String) -split '\r?\n\s*go\r?\n' |
+            (Get-Content $sqlScript | Out-String) -split '\r?\n\s*go\s*\r\n?' |
                 ForEach-Object { $SqlCmd.CommandText = $_.Trim(); $reader = $SqlCmd.ExecuteNonQuery() }
         }
     }
