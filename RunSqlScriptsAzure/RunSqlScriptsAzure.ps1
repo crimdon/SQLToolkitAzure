@@ -5,7 +5,7 @@ Param
     [String] $ConnectedServiceName,
     [String] $ConnectedServiceNameARM,
     [String] [Parameter(Mandatory = $true)] $pathToScripts,
-    [String] [Parameter(Mandatory = $true)] $executionOrder,
+    [String] [Parameter(Mandatory = $false)] $executionOrder,
     [String] [Parameter(Mandatory = $true)] $serverName,
     [String] [Parameter(Mandatory = $true)] $databaseName,
     [String] [Parameter(Mandatory = $true)] $userName,
