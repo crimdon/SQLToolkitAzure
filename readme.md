@@ -18,6 +18,8 @@ This is a set of build and deployment tasks to support Azure Databases.
 
 - RunSingleSqlScript - This task will run a specified SQL script against your database.
 
+- AddOrUpdateUserAzure - This task will add (or update the password of) a user
+
 ## Website: 
 
 [SQL Toolkit for Azure](https://github.com/crimdon/SQLToolkitAzure)
