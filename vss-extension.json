@@ -2,7 +2,7 @@
     "manifestVersion": 1,
     "id": "sql-toolkit-azure",
     "name": "SQL Toolkit for Azure",
-    "version": "1.5.3",
+    "version": "1.6.0",
     "public": true,
     "publisher": "andrewlackenby",
 	"categories": [
@@ -40,6 +40,9 @@
         },
         {
             "path": "RunSqlScriptsAzure"
+        },
+        {
+            "path": "AddOrUpdateUserAzure"
         }
     ],
     "contributions": [
@@ -71,6 +74,16 @@
             ],
             "properties": {
                 "name": "RunSqlScriptsAzure"
+            }
+        },
+        {
+            "id": "addorupdateuserazure",
+            "type": "ms.vss-distributed-task.task",
+            "targets": [
+                "ms.vss-distributed-task.tasks"
+            ],
+            "properties": {
+                "name": "AddOrUpdateUserAzure"
             }
         }
     ]
