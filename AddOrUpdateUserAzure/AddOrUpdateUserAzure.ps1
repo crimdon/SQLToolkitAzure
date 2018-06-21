@@ -21,7 +21,7 @@ Try
 	Write-Host "Running Stored Procedure"
 
 	#Construct to the SQL to run
-	[string]$sqlQuery = "IF NOT EXISTS (SELECT name FROM sys.database_principals WHERE name = N'$targetUserName') CREATE USER [$targetUserName] WITH PASSWORD = '$targetUserPassword' ELSE ALTER USER [$targetUserName] WITH PASSWORD = '$targetUserPassword' ; GRANT SELECT ON SCHEMA :: [dbo] TO $targetUserName"
+	[string]$sqlQuery = "IF NOT EXISTS (SELECT name FROM sys.database_principals WHERE name = N'$targetUserName') CREATE USER [$targetUserName] WITH PASSWORD = '$targetUserPassword' ELSE ALTER USER [$targetUserName] WITH PASSWORD = '$targetUserPassword' ; ALTER ROLE db_datareader ADD MEMBER [$targetUserName] ; ALTER ROLE db_datawriter ADD MEMBER [$targetUserName]"
 		
 	#Execute the query
 	$SqlConnection = New-Object System.Data.SqlClient.SqlConnection
