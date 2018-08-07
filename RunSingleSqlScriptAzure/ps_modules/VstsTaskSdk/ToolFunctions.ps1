@@ -1,6 +1,10 @@
-########################################
-# Public functions.
-########################################
+<#
+.SYNOPSIS
+Asserts that a path exists. Throws if the path does not exist.
+
+.PARAMETER PassThru
+True to return the path.
+#>
 function Assert-Path {
     [CmdletBinding()]
     param(
@@ -32,28 +36,22 @@ function Assert-Path {
     throw (Get-LocString -Key $resourceKey -ArgumentList $LiteralPath)
 }
 
-function Invoke-TaskScript {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)]
-        [scriptblock]$ScriptBlock)
+<#
+.SYNOPSIS
+Executes an external program.
 
-    try {
-        Write-Verbose "$($MyInvocation.MyCommand.Module.Name) $($MyInvocation.MyCommand.Module.Version)" 4>&1 | Out-Default
-        Merge-Pipelines -ScriptBlock $ScriptBlock
-    } catch [VstsTaskSdk.TerminationException] {
-        # Special internal exception type to control the flow. Not currently intended
-        # for public usage and subject to change.
-        Write-Verbose "Task script terminated." 4>&1 | Out-Default
-    } catch {
-        Write-Verbose "Caught exception from task script." 4>&1 | Out-Default
-        $_ | Out-Default
-        Write-SetResult -Result Failed -DoNotThrow
-    }
-}
+.DESCRIPTION
+Executes an external program and waits for the process to exit.
 
-# TODO: RENAME TO INVOKE-PROCESS?
-function Invoke-Tool {
+After calling this command, the exit code of the process can be retrieved from the variable $LASTEXITCODE.
+
+.PARAMETER Encoding
+This parameter not required for most scenarios. Indicates how to interpret the encoding from the external program. An example use case would be if an external program outputs UTF-16 XML and the output needs to be parsed.
+
+.PARAMETER RequireExitCodeZero
+Indicates whether to write an error to the error pipeline if the exit code is not zero.
+#>
+function Invoke-Tool { # TODO: RENAME TO INVOKE-PROCESS?
     [CmdletBinding()]
     param(
         [ValidatePattern('^[^\r\n]*$')]
@@ -64,7 +62,7 @@ function Invoke-Tool {
         [string]$Arguments,
         [string]$WorkingDirectory,
         [System.Text.Encoding]$Encoding,
-        [switch]$RequireExitCodeZero) # TODO: THIS SHOULD PROBABLY BE FLIPPED, i.e. [switch]$AllowNonZeroExitCode
+        [switch]$RequireExitCodeZero)
 
     Trace-EnteringInvocation $MyInvocation
     $isPushed = $false
@@ -81,8 +79,8 @@ function Invoke-Tool {
         }
 
         $FileName = $FileName.Replace('"', '').Replace("'", "''")
-        $expression = "& '$FileName' --% $Arguments"
-        Invoke-Expression $expression
+        Write-Host "##[command]""$FileName"" $Arguments"
+        Invoke-Expression "& '$FileName' --% $Arguments"
         Write-Verbose "Exit code: $LASTEXITCODE"
         if ($RequireExitCodeZero -and $LASTEXITCODE -ne 0) {
             Write-Error (Get-LocString -Key PSLIB_Process0ExitedWithCode1 -ArgumentList ([System.IO.Path]::GetFileName($FileName)), $LASTEXITCODE)
@@ -97,25 +95,5 @@ function Invoke-Tool {
         }
 
         Trace-LeavingInvocation $MyInvocation
-    }
-}
-
-########################################
-# Private functions.
-########################################
-function Merge-Pipelines {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)]
-        [scriptblock]$ScriptBlock,
-        [switch]$DoNotSetErrorActionPreference)
-
-    if ($DoNotSetErrorActionPreference) {
-        . $ScriptBlock 2>&1 3>&1 4>&1 5>&1 | Out-Default
-    } else {
-        $ErrorActionPreference = 'Stop'
-        Remove-Item -LiteralPath variable:ScriptBlock
-        Remove-Item -LiteralPath variable:DoNotSetErrorActionPreference
-        & $ScriptBlock.GetNewClosure() 2>&1 3>&1 4>&1 5>&1 | Out-Default
     }
 }
