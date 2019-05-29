@@ -2,7 +2,7 @@
     "manifestVersion": 1,
     "id": "sql-toolkit-azure",
     "name": "SQL Toolkit for Azure",
-    "version": "1.6.1",
+    "version": "1.6.3",
     "public": true,
     "publisher": "andrewlackenby",
 	"categories": [
