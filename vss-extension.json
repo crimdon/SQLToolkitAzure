@@ -2,34 +2,46 @@
     "manifestVersion": 1,
     "id": "sql-toolkit-azure",
     "name": "SQL Toolkit for Azure",
-    "version": "1.6.4",
+    "version": "1.6.5",
     "public": true,
     "publisher": "andrewlackenby",
-	"categories": [
+    "categories": [
         "Build and release"
     ],
     "links": {
         "support": {
             "uri": "https://github.com/crimdon/SQLToolkitAzure/issues"
+        },
+        "learn": {
+            "uri": "https://github.com/crimdon/SQLToolkitAzure/wiki"
+        },
+        "repository": {
+            "uri": "https://github.com/crimdon/SQLToolkitAzure"
+        },
+        "privacypolicy": {
+            "uri": "https://github.com/crimdon/SQLToolkitAzure/wiki/Privacy-Policy"
         }
+    },
+    "repository": {
+        "type": "git",
+        "uri": "https://github.com/crimdon/SQLToolkitAzure"
     },
     "targets": [
         {
             "id": "Microsoft.VisualStudio.Services"
         }
-    ],    
+    ],
     "description": "SQL Toolkit for Azure",
-
     "icons": {
-        "default": "icon.jpg"        
+        "default": "icon.jpg"
     },
     "content": {
         "details": {
             "path": "readme.md"
-    },
-    "license": {
+        },
+        "license": {
             "path": "LICENSE.txt"
-    }
+        }
     },
     "files": [
         {
